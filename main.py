@@ -155,7 +155,7 @@ def make_array_C_Complex(array_to_convert, title = ""):
             element = element * 8192
             real_str = int(np.round(element.real))
             imag_str = int(np.round(element.imag))
-            f.write("{" + str(real_str) + " + " + str(imag_str) + "j},\n")
+            f.write("{" + str(real_str) + " , " + str(imag_str) + "},\n")
     except ValueError:
         f.close()
     except OSError:
@@ -205,9 +205,13 @@ def filter_IIR_ellip_SOS(filter_order, fc_low, fc_high, pass_band_ripple_db, sto
     sos = signal.ellip(N=filter_order, rp=pass_band_ripple_db, rs=stop_band_attn_db, Wn=[fc_low, fc_high], fs=sampling_frequency
                        ,btype=filter_type, output="sos")
 
-    #Arrondissement des SOS
-    sos_rounded = np.round(sos*np.power(2,13))
     print(sos)
+
+
+    sos_rounded = np.round(sos*np.power(2,13))
+    [z, p, k] = signal.sos2zpk(sos_rounded / np.power(2, 13))
+    print(np.abs(z))
+    print(np.abs(p))
     [w_sos_rounded, h_dft_sos_rounded] = signal.sosfreqz(sos_rounded/np.power(2,13), worN=10000, fs=fe)
     if show_data == True:
         plt.semilogx(w_sos_rounded, 20 * np.log10(np.abs(h_dft_sos_rounded)))
@@ -215,7 +219,6 @@ def filter_IIR_ellip_SOS(filter_order, fc_low, fc_high, pass_band_ripple_db, sto
     return [sos, sos_rounded, w_sos_rounded, h_dft_sos_rounded]
 
 def make_IIR_coefficient_file(SOS_to_convert, title = ""):
-
     try:
         f = open(title+".txt", "w", encoding="utf-8")
         f.write(title + "\n")
@@ -246,7 +249,7 @@ def make_IIR_coefficient_file(SOS_to_convert, title = ""):
 [h_bp_500_1500, H_DFT_bp_500_1500] = create_filter(256, [500, 1500], 20000, 'blackman', 'bandpass',padding_zero=3*256, plot_data = False)
 [h_bp_1500_2500, H_DFT_bp_1500_2500] = create_filter(256, [1500, 2500], 20000, 'blackman', 'bandpass',padding_zero=3*256,  plot_data = False)
 [h_bp_2500_4500, H_DFT_bp_2500_4500] = create_filter(256, [ 2500, 4500], 20000, 'blackman', 'bandpass',padding_zero=3*256,  plot_data = False)
-[h_highpass_4490, H_DFT_highpass_4490] = create_filter(255, 4490, 20000, 'blackman', 'highpass',padding_zero=3*256 + 1,  plot_data = False)
+[h_highpass_4490, H_DFT_highpass_4490] = create_filter(255, 4490, 20000, 'blackman', 'highpass',padding_zero=3*256 + 1,  plot_data = True)
 
 
 filter_list_DFT = [H_DFT_low_500, H_DFT_bp_500_1500,H_DFT_bp_1500_2500, H_DFT_bp_2500_4500 , H_DFT_highpass_4490]
@@ -260,7 +263,7 @@ make_array_C_Complex(H_DFT_highpass_4490, title = "high pass 4500")
 
 
 
-
+x_impulse = signal.unit_impulse(1000)
 x_250 = create_sinus(128, 250,20000,256)
 x_250_pad = [np.append(x_250[0], np.zeros(10000-len(x_250[0]))),250]
 x_750 = create_sinus(128,750,20000,256)
@@ -282,18 +285,18 @@ x_5000_pad = [np.append(x_5000[0], np.zeros(10000-len(x_5000[0]))), 5000]
 
 
 
-x_signals = [x_250, x_750, x_1000, x_1250, x_1750, x_2750, x_3750, x_5000]
+x_signals = [[x_impulse, 0], x_250, x_750, x_1000, x_1250, x_1750, x_2750, x_3750, x_5000]
 x_signals_pad = [x_250_pad, x_750_pad, x_1000_pad, x_1250_pad, x_2750_pad, x_3750_pad, x_5000_pad]
 
 
-[sos, sos_rounded, w_sos_rounded, h_dft_sos_rounded] = filter_IIR_ellip_SOS(filter_order = 4, fc_low = 950, fc_high = 1050, pass_band_ripple_db = 0.5,
+[sos, sos_rounded, w_sos_rounded, h_dft_sos_rounded] = filter_IIR_ellip_SOS(filter_order = 4, fc_low = 950, fc_high = 1050, pass_band_ripple_db = 1,
                                                                             stop_band_attn_db = 70, sampling_frequency = 20000 , filter_type = "bandstop",
                                                                             Q_X = 2, Q_Y = 13, fe = 20000.0, show_data = True)
 
 make_IIR_coefficient_file(sos_rounded, "Coefficient_SOS_ordre_4")
 print(sos_rounded)
 #test_filter_convolution(h_bp_1500_2500, x_signals)
-test_filter_SOS(sos, x_signals)
+test_filter_SOS(sos_rounded/(2**13), x_signals)
 #plot_complex_csv_data("outFFT.csv", 2**31,  20000)
 
 x_2000 = create_sinus(128, 2000,20000,1024, plot_data=False)
