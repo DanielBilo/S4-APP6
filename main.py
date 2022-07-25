@@ -15,6 +15,9 @@ def plan_de_test_A(amplitude = 1, frequency_test  = 1000, fe = 20000, N = 768, p
     x_signal_freq = np.arange(0, N)*fe/N
     x_signal_dft = np.fft.fft( x_signal[0])
     x_signal_window_dft = np.fft.fft(x_signal_window)
+
+    plt.xlabel("Fréquence(Hz)")
+    plt.ylabel("Amplitude(dB)")
     plt.title("Spectres des sinusoides de " + str(x_signal[1]) + "Hz avec et sans fenêtrage")
     plt.plot(x_signal_freq, 20*np.log10(np.abs(x_signal_dft)**2), label = "Spectre du sinus sans fenêtrage")
     plt.plot(x_signal_freq, 20 * np.log10(np.abs(x_signal_window_dft)**2), label="Spectre du sinus avec fenêtrage")
@@ -65,6 +68,9 @@ def plan_de_test_C():
                                                                                 show_data=False)
 
     [w_sos, h_dft_sos] = signal.sosfreqz(sos_Q213, worN=10000, fs=20000.0)
+    plt.xlabel("Fréquence(Hz)")
+    plt.ylabel("Amplitude(dB)")
+    plt.title("Spectre d'amplitude du filtre IIR")
     plt.semilogx(w_sos_rounded_Q213, 20 * np.log10(np.abs(h_dft_sos_rounded_Q213)), label = "Filtre IIR Q2.13")
     plt.semilogx(w_sos_rounded_Q25, 20 * np.log10(np.abs(h_dft_sos_rounded_Q25)), label = "Filtre IIR Q2.5")
     plt.semilogx(w_sos, 20 * np.log10(np.abs(h_dft_sos)), label = "Filtre IIR format initiale")
@@ -221,7 +227,7 @@ def show_filter(filter_list, fe = 20000, show_H1_H3_H5 = False):
     fig = plt.figure()
     ax1 = fig.add_subplot(211)
     plt.grid(which = "both", axis = "both")
-    plt.title("Fonction de transfert H[f]")
+    plt.title("Fonctions de transfert Hx[f]")
     freq = np.arange(0, len(filter_list[0][0]))*fe/len(filter_list[0][0])
     for filter_DFT in filter_list:
         ax1.semilogx(freq, 20*np.log10(np.abs(filter_DFT[0])), label = filter_DFT[1])
@@ -229,14 +235,14 @@ def show_filter(filter_list, fe = 20000, show_H1_H3_H5 = False):
     ax1.set_xlim([0, int(fe / 2)])
     ax1.set_ylim([-40, 10])
     plt.legend()
-    plt.xlabel("Gain [dB]")
-    plt.ylabel("Fréquence [Hz]")
+    plt.ylabel("Gain [dB]")
+    plt.xlabel("Fréquence [Hz]")
 
     ax2 = fig.add_subplot(212)
     plt.grid(which="both", axis="both")
-    plt.title("Fonction de transfert cummulatif H1 + H2 + H3 + H4 + H5")
-    plt.xlabel("Gain [dB]")
-    plt.ylabel("Fréquence [Hz]")
+    plt.title("Fonction de transfert cummulatif H7 + H6 + H5 + H4 + H3")
+    plt.ylabel("Gain [dB]")
+    plt.xlabel("Fréquence [Hz]")
     ax2.semilogx(freq, 20*np.log10(np.abs(H_tot)))
     ax2.set_xlim([0, int(fe / 2)])
     ax2.set_ylim([-40, 10])
@@ -245,13 +251,13 @@ def show_filter(filter_list, fe = 20000, show_H1_H3_H5 = False):
     if show_H1_H3_H5 == True:
         print("Affichage optionnel du filtre composé de H1, H3, H5")
         H1_H3_H5 = filter_list[0][0] + filter_list[2][0] + filter_list[4][0]
-        plt.title("Fonction de transfert cummulatif H1  + H3  + H5")
+        plt.title("Fonction de transfert cummulatif H7  + H5  + H3")
         plt.grid(which="both", axis="both")
-        plt.xlabel("Gain [dB]")
-        plt.ylabel("Fréquence [Hz]")
+        plt.ylabel("Gain [dB]")
+        plt.xlabel("Fréquence [Hz]")
         plt.plot(freq, 20 * np.log10(np.abs(H1_H3_H5)))
         plt.xlim(0, int(fe / 2))
-        plt.ylim([-40, 10])
+        #plt.ylim([-40, 10])
         plt.show()
 
 
