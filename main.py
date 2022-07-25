@@ -315,7 +315,7 @@ def main():
     plan_de_test_A(amplitude = 1, frequency_test  = 1000, fe = 20000, N = 768, plot_sinus = True)
     plan_de_test_B()
     plan_de_test_C()
-    optionnal_test()
+    #optionnal_test()
 
 if __name__ == "__main__":
     main()
